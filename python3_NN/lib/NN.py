@@ -61,5 +61,8 @@ class NN:
                     self.weights.append(np.random.rand(self.layers[i], self.layers[i-1]))
                 self.biases.append(np.random.rand(self.layers[i]))
 
+            print("Neuron weights")
             print(self.weights, "\n\n\n")
+
+            print("Neuron biases")
             print(self.biases)
