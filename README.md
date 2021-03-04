@@ -12,7 +12,7 @@ Either i2c-tools or python-smbus will be used to interface with i2c
 
 # TODO
 
-Write AI-framework in python using class structure (using Matlab as source)
+Write AI-framework in python3 using class structure (using Matlab as source)
 
 Write Train and Test scripts 
 
