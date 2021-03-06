@@ -10,6 +10,14 @@ elseif activationFunctionType == 3
     dadz = dTanhdz(previousActivations,layerWeights,layerBiases);
 elseif activationFunctionType == 4
     dadz = dReLUdz(previousActivations,layerWeights,layerBiases);
+elseif activationFunctionType == 5
+    dadz = dLeakyReLUdz(previousActivations,layerWeights,layerBiases);
+elseif activationFunctionType == 6
+    dadz = dELUdz(previousActivations,layerWeights,layerBiases);
+elseif activationFunctionType == 7
+    dadz = dSELUdz(previousActivations,layerWeights,layerBiases);
+elseif activationFunctionType == 8
+    dadz = dGELUdz(previousActivations,layerWeights,layerBiases);
 end
 end
 

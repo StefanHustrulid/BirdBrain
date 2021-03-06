@@ -9,5 +9,5 @@ function activation = TanhActivationFunction(previousActivation, layerWeights, l
 %   layerBiases is an mx1 array of the biases in the current layer.
 %   acivation is an mx1 array of the activation of the current layer.
 z = (layerWeights*previousActivation) + layerBiases;
-activation = (exp(z)-exp(-z))./(exp(z)+exp(-z));
+activation = tanh(z);
 end

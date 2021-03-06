@@ -84,6 +84,9 @@ else %Train Given inputs with ideal outputs to train the neural network with
     [activations0, idealOutputs] = input(['input ' num2str(numberOfInputs) 'xn matrix of inputs and ' num2str(numberOfOutputs) 'xn matrix of outputs where n = number of training data']);
     [trainingMethod, ifAnswered] = listdlg('PromptString','What is your Training Method?','SelectionMode','single','ListString',{'Gradient Descent','Stochastic Gradient Descent','GD With Momentum', 'SGD with Momentum'});
     
+    %Want to make adjustment to SGD and SGD+M (trainingMethod == 2 or 4)...
+    %   4) Have a step to epoch unit convsrsion for plotting.
+    
     if trainingMethod == 1
         goal = input('Max acceptable cost: ');
         maxNumberOfSteps = input('Max number of rounds of training: ');

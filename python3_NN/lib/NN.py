@@ -28,7 +28,7 @@ class NN:
                     continue
                 break
             print("\nNeural net layer structure: ", self.layers, "\n")
-            
+
             # Set NN activation function
             menu = {}
             menu['1'] = "Linear"
