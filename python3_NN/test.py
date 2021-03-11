@@ -2,5 +2,18 @@
 
 from lib import NN
 
+print("For this test, the first and last layer size must be 3!")
+nn = NN.NN(False)
 
-NN.NN(False)
+print("Weights")
+print(nn.weights)
+
+nn.forward([1,1,1])
+print("\nCOST: ", nn.cost([1,1,1]))
+nn.backward([1,1,1])
+
+
+print("\nNew Weights")
+print(nn.weights)
+nn.forward([1,1,1])
+print("\nCOST: ", nn.cost([1,1,1]))
