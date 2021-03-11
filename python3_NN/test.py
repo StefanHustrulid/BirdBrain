@@ -9,11 +9,20 @@ print("Weights")
 print(nn.weights)
 
 nn.forward([1,1,1])
-print("\nCOST: ", nn.cost([1,1,1]))
+print("\nCOST: ", sum(nn.cost([1,1,1])))
+nn.backward([1,1,1])
+
+nn.forward([1,1,1])
+nn.backward([1,1,1])
+nn.forward([1,1,1])
+nn.backward([1,1,1])
+nn.forward([1,1,1])
+nn.backward([1,1,1])
+nn.forward([1,1,1])
 nn.backward([1,1,1])
 
 
 print("\nNew Weights")
 print(nn.weights)
 nn.forward([1,1,1])
-print("\nCOST: ", nn.cost([1,1,1]))
+print("\nCOST: ", sum(nn.cost([1,1,1])))
