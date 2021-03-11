@@ -47,7 +47,7 @@ class NN:
                 print (entry, menu[entry])
             selection=input("Select an activation function: ")
             self.activationType = menu[selection]
-            print("\nActivation function: ", self.activationType, "\n")
+            print("Activation function: ", self.activationType, "\n")
 
             # Set output type
             menu = {}
@@ -59,7 +59,7 @@ class NN:
                 print (entry, menu[entry])
             selection=input("Select an output type: ")
             self.outputType = menu[selection]
-            print("\nOutput type: ", self.outputType, "\n")
+            print("Output type: ", self.outputType, "\n")
 
             # Initialize Weights and Biases randomly
             self.weights = []
@@ -94,14 +94,14 @@ class NN:
     #
     def backward(self, ideal):
         output = self.results[len(self.results)-1]
-         
+
         # calculate dC/da (based on output type)
         dcda = []
         if(self.outputType == "0 to 100%"):
             dcda = -ideal/output
         else:
             dcda = 2*(output-ideal)
-        
+
         for i in range(len(self.layers)-1, 0, -1): # count down
             # calculate da/dz (based on activation function)
             # currently just based on ReLU
@@ -110,7 +110,7 @@ class NN:
             # calculate dz/dW (activation level of previous layer)
             # TODO add support for more activation levels
             dzdw = self.results[i-1]
-            
+
             # calculate required change in values
             dcdz = dcda*dadz
             dcdw = np.zeros([len(dcdz), len(dzdw)])
@@ -121,7 +121,7 @@ class NN:
             dcdb = dcda*dadz                            #dz/db is always 1
 
             dcda = np.matmul(dcdz, self.weights[i-1])   # is really dC/d(a-1), but simpler to reassign var
-            
+
             # Update values
             self.lastWeightDelta[i-1] = (-self.learningRate * dcdw) + (self.decayRate * np.array(self.lastWeightDelta[i-1]))
             self.lastBiasDelta[i-1] = (-self.learningRate * dcdb) + (self.decayRate * np.array(self.lastBiasDelta[i-1]))
@@ -143,7 +143,7 @@ class NN:
                 nnInput[i] = 0
         return nnInput
 
-    
+
     #
     # Cost function: auto detects based on function
     #
