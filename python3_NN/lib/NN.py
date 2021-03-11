@@ -66,7 +66,7 @@ class NN:
             self.biases = []
             self.lastWeightDelta = []
             self.lastBiasDelta = []
-            self.learningRate = 0.001
+            self.learningRate = 0.01
             self.decayRate = 0.5
             for i in range(len(self.layers)):
                 if(i != 0):
