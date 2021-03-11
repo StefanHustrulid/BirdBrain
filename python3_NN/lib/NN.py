@@ -98,7 +98,7 @@ class NN:
         # calculate dC/da (based on output type)
         dcda = []
         if(self.outputType == "0 to 100%"):
-            dcda = -ideal/output
+            dcda = -1*(ideal/output)
         else:
             dcda = 2*(output-ideal)
 
