@@ -8,7 +8,7 @@ function dadz = dELUdz(previousActivations,layerWeights,layerBiases)
 %   layerBiases is an mx1 array of the biases in the current layer.
 %   dadz is an mx1 array of the  derivative of the activation of the 
 %   current layer with respect to z.
-constant = 0.1; %some constant between 0&1
+constant = 1; %some constant between 0&1
 activations = ELUActivationFunction(previousActivations,layerWeights,layerBiases);
 z = (layerWeights*previousActivations) + layerBiases;
 dadz = (z >= 0) + ((activations + constant).*(z < 0));

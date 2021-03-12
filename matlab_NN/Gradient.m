@@ -7,7 +7,7 @@ numberOfLayers = numel(weights) + 1;
 totaldCostdWeights = cell(1,numberOfLayers-1);
 totaldCostdBiases = cell(1,numberOfLayers-1);
 
-for layer = 1:NumberOfLayers-1
+for layer = 1:numberOfLayers-1
     totaldCostdWeights{layer} = zeros(size(weights{layer}));
     totaldCostdBiases{layer} = zeros(size(biases{layer}));
 end
@@ -20,7 +20,7 @@ for constraint = 1:size(activations0(1,:)) %For each a0&y in batch calculate cha
     dCostdPreviousActivations = cell(1,numberOfLayers-2);            
     dCostdWeights{numberOfLayers-1} = zeros(size(weights{numberOfLayers-1}));           
     dCostdBiases{numberOfLayers-1} = zeros(size(biases{numberOfLayers-1}));           
-    for layer = 1:NumberOfLayers-2                
+    for layer = 1:numberOfLayers-2                
         dCostdWeights{layer} = zeros(size(weights{layer}));                
         dCostdBiases{layer} = zeros(size(biases{layer}));         
         dCostdPreviousActivations{layer} = zeros(size(activations{layer}));          

@@ -10,23 +10,26 @@ activations0 = activations0(:,newOrder);
 idealOutputs = idealOutputs(:,newOrder);
 
 numberOfBatches = floor(dataSize/batchSize);
-lastBatchSize = rem(dataSize/batchSize);      
+lastBatchSize = rem(dataSize,batchSize);      
 if lastBatchSize == 0
     batch = cell(numberOfBatches,2);            
     batch{1,1} = activations0(:,1:batchSize);
     batch{1,2} = idealOutputs(:,1:batchSize);
     for b = 2:numberOfBatches
-        batch{b,1} = activations0(:,(batchSize^(b-1))+1:batchSize^b);
+        batch{b,1} = activations0(:,(batchSize*(b-1))+1:batchSize*b);
+        batch{b,2} = idealOutputs(:,(batchSize*(b-1))+1:batchSize*b);
     end    
 else    
     batch = cell(numberOfBatches+1,2);
     batch{1,1} = activations0(:,1:batchSize);
     batch{1,2} = idealOutputs(:,1:batchSize);
     for b = 2:numberOfBatches       
-        batch{b,1} = activations0(:,(batchSize^(b-1))+1:batchSize^b);
+        batch{b,1} = activations0(:,(batchSize*(b-1))+1:batchSize*b);
+        batch{b,2} = idealOutputs(:,(batchSize*(b-1))+1:batchSize*b);
     end   
     b = numberOfBatches+1;
-    batch{b,1} = activations0(:,(batchSize^(b-1))+1:dataSize);
+    batch{b,1} = activations0(:,(batchSize*(b-1))+1:dataSize);
+    batch{b,2} = idealOutputs(:,(batchSize*(b-1))+1:dataSize);
 end
 end
 

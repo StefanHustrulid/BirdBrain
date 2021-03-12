@@ -15,8 +15,7 @@ if numberOfHiddenLayers > 1
         activations{layer} = ActivationFunction(activations{layer-1},weights{layer},biases{layer},activationFunctionType);
     end
 end
-lastLayer = numberOfLayers-1;
-activations{lastLayer} = FinalActivationFunction(activations{lastLayer-1}, weights{lastLayer}, biases{lastLayer}, outputType);
+activations{end} = FinalActivationFunction(activations{end-1}, weights{end}, biases{end}, outputType);
 end
 
 function output = FinalActivationFunction(lastHiddenActivation, lastWeights, lastBiases, outputType)

@@ -151,19 +151,18 @@ else %Train Given inputs with ideal outputs to train the neural network with
         goal = input('Max acceptable cost: ');
         maxNumberOfEpochs = input('Max number of epochs: ');
         batchSize = input('Batch size: ');
-        tempBatch = GenerateBatches(activations0,idealOutputs,batchSize);
-        stepsPerEpoch = numel(tempBatch);
+        stepsPerEpoch = numel(GenerateBatches(activations0,idealOutputs,batchSize));
         maxNumberOfSteps = maxNumberOfEpochs*stepsPerEpoch;
         
         costs = zeros(numberOfOutputs,maxNumberOfSteps+1);
-        totalCost = zeros(1,maxNumberOfSteps+1);
+        totalCost = zeros(1,maxNumberofSteps+1);
         
         step = 1;
         [costs(step),totalCost(step)] = TestNeuralNetwork(weights,biases,activations0,idealOutputs,activationFunctionType,outputType);
         while totalCost(step) >= goal || step <= maxNumberOfSteps
             batch = GenerateBatches(activations0,idealOutputs,batchSize);
             for round = 1:numel(batch)/2
-                [weights,biases] = GradientStep(weights,biases,batch{round,1},batch{round,2},learningRate,activationFunctionType,outputType); 
+                [weights,biases] = GradientStep(weights,biases,batch(round,1),batch(round,2),learningRate,activationFunctionType,outputType); 
                 step = step + 1;
                 [costs(step),totalCost(step)] = TestNeuralNetwork(weights,biases,activations0,idealOutputs,activationFunctionType,outputType);
                 if totalCost(step) <= goal
@@ -229,7 +228,7 @@ else %Train Given inputs with ideal outputs to train the neural network with
         while totalCost(step) >= goal || step <= maxNumberOfSteps
             batch = GenerateBatches(activations0,idealOutputs,batchSize);
             for round = 1:numel(batch)/2
-                [weights,biases,totaldCostdWeights,totaldCostdBiases] = GradientStepWithMomentum(weights,biases,batch{round,1},batch{round,2},totaldCostdWeights,totaldCostdBiases,learningRate,decayRate,activationFunctionType,outputType); 
+                [weights,biases,totaldCostdWeights,totaldCostdBiases] = GradientStepWithMomentum(weights,biases,batch(round,1),batch(round,2),totaldCostdWeights,totaldCostdBiases,learningRate,decayRate,activationFunctionType,outputType); 
                 step = step + 1;
                 [costs(step),totalCost(step)] = TestNeuralNetwork(weights,biases,activations0,idealOutputs,activationFunctionType,outputType);
                 if totalCost(step) <= goal

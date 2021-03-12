@@ -11,15 +11,15 @@ function [dzdw,dzdb,dzdaprev] = dzdwba(weights,biases,activations,activations0)
 %   result in nx1 array of dcdaprev
 dzdw = cell(1:numel(weights));
 dzdb = cell(1:numel(biases));
-dzdaprev = cell(1:numel1(activations));
+dzdaprev = cell(1:numel(activations));
 for layer = 1:numel(dzdw)
     dzdw{layer} = zeros(size(weights{layer}));
     for layerNeuron = 1:length(dzdw{layer}(:,1))
         for previousLayerNeuron = 1:length(dzdw{layer}(1,:))
             if layer > 1
-                dzdw{layer}(layerNeuron,previouslayerNeuron) = activations(layer-1);
+                dzdw{layer}(layerNeuron,previousLayerNeuron) = activations(layer-1);
             else
-                dzdw{layer}(layerNeuron,previouslayerNeuron) = activations0;
+                dzdw{layer}(layerNeuron,previousLayerNeuron) = activations0;
             end
         end
     end
