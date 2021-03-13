@@ -9,22 +9,21 @@ function [dzdw,dzdb,dzdaprev] = dzdwba(weights,biases,activations,activations0)
 %   dzdb is a cell array of dzdb for each bias (=1)
 %   dzdaprev is a cell array of nxm matrixs of weights to be multiplied by array dcdz to
 %   result in nx1 array of dcdaprev
-dzdw = cell(1:numel(weights));
-dzdb = cell(1:numel(biases));
-dzdaprev = cell(1:numel(activations));
+dzdw = cell(1,numel(weights));
+dzdb = cell(1,numel(biases));
+dzdaprev = cell(1,numel(activations));
 for layer = 1:numel(dzdw)
-    dzdw{layer} = zeros(size(weights{layer}));
-    for layerNeuron = 1:length(dzdw{layer}(:,1))
-        for previousLayerNeuron = 1:length(dzdw{layer}(1,:))
-            if layer > 1
-                dzdw{layer}(layerNeuron,previousLayerNeuron) = activations(layer-1);
-            else
-                dzdw{layer}(layerNeuron,previousLayerNeuron) = activations0;
-            end
+    dzdw{layer} = zeros(size(weights{layer}));   
+    for layerNeuron = 1:length(weights{layer}(:,1))
+        if layer > 1
+            dzdw{layer}(layerNeuron,:) = activations{layer-1}';
+        else
+            dzdw{layer}(layerNeuron,:) = activations0';
         end
     end
+  
     dzdb{layer} = ones(size(biases{layer}));
-    dzdaprev{layer} = weights{layer}';
+    dzdaprev{layer} = sum(weights{layer},2)';
 end
 end
 

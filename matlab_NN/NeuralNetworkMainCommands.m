@@ -124,9 +124,11 @@ else %Train Given inputs with ideal outputs to train the neural network with
         learningRate = input('Learning Rate: ');
     end
     
-    inputFileName = input('inputs file name (with .txt): ','s');
+    %inputFileName = input('inputs file name (with .txt): ','s');
+    inputFileName = 'inputs.txt';
     activations0 = importdata(inputFileName);
-    idealOutputsFileName = input('ideal outputs file name (with .txt): ','s');
+    %idealOutputsFileName = input('ideal outputs file name (with .txt): ','s');
+    idealOutputsFileName = 'idealOutputs.txt';
     idealOutputs = importdata(idealOutputsFileName);
     
     [trainingMethod, ifAnswered] = listdlg('PromptString','What is your Training Method?','SelectionMode','single','ListString',{'Gradient Descent','Stochastic Gradient Descent','GD With Momentum', 'SGD with Momentum'});
