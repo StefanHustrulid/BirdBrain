@@ -22,7 +22,7 @@ dcdb{end} = sum(ones(size(activations{end})).*dcdz,2);
 for layer = numel(dcdw)-1:-1:1
     
     %dcdz = dzPlus1da .* dadz .* dcdzPlus1
-    dzPlusOneda = sum(weights{layer-1})';
+    dzPlusOneda = sum(weights{layer+1})';
     
     %for components that use activations0
     if layer == 1
