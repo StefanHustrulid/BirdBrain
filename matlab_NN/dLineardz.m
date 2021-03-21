@@ -8,6 +8,7 @@ function dadz = dLineardz(previousActivations,layerWeights,layerBiases)
 %   layerBiases is an mx1 array of the biases in the current layer.
 %   dadz is an mx1 array of the  derivative of the activation of the 
 %   current layer with respect to z.
-dadz = 1;
+z = (layerWeights*previousActivations) + layerBiases;
+dadz = ones(size(z));
 end
 

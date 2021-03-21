@@ -10,5 +10,5 @@ function dadz = dGELUdz(previousActivations,layerWeights,layerBiases)
 %   current layer with respect to z.
 
 z = (layerWeights*previousActivations) + layerBiases;
-dadz = 0.5*tanh((0.0356774*z.^3)+(0.797885*z))  +(((0.0535161*z.^3)+(0.398942*z)).*((sech((0.0356774*z.^3)+(0.797885*z))).^2)) + 0.5;
+dadz = 0.5*tanh((0.0356774*z.^3)+(0.797885*z))+(((0.0535161*z.^3)+(0.398942*z)).*((sech((0.0356774*z.^3)+(0.797885*z))).^2)) + 0.5;
 end
