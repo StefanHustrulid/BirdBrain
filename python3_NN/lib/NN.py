@@ -14,13 +14,733 @@
 # self.lastBiasDelta        bias changes of last time (to use with decay)
 
 import numpy as np
+import json
 
+class NeuralNetwork:
 
-class NN:
-    # Neural Network common methods:
-    # Activation Functions and their derivatives
-    x = "Hi"
+    def __init__(self, isNew):
+        # isNew is boolean
+        NeuralNetworkStructure = []
+        NeuralNetwork = []
+        if isNew == False:
+            filename = input("Neural Network Structure File: ")
+            NNSFile = json.open(filename)
+            NeuralNetworkStructure = json.load(NNSFile)
+        else:
+            layerTypes = {}
+            layerTypes['1'] = "Convolution 2D"
+            layerTypes['2'] = "Max Pooling 2D"
+            layerTypes['3'] = "Min Pooling 2D"
+            layerTypes['4'] = "Mean Pooling 2D"
+            layerTypes['5'] = "L2 Pooling 2D"
+            layerTypes['6'] = "Flatten 2D"
+            layerTypes['7'] = "Inverse Flatten 2D"
+            layerTypes['8'] = "Activation"
+            layerTypes['9'] = "Fully Connected"
+            layerTypes['10'] = "0-# for layer type information... Not Yet Implemented"
+            layerTypes['11'] = "Done"
 
+            activationOptions = {}
+            activationOptions['1'] = "Linear"
+            activationOptions['2'] = "Sigmoid"
+            activationOptions['3'] = "Tanh"
+            activationOptions['4'] = "ReLU"
+            activationOptions['5'] = "LReLU"
+            activationOptions['6'] = "PReLU"
+            activationOptions['7'] = "ELU"
+            activationOptions['8'] = "SELU"
+            activationOptions['9'] = "GELU"
+            activationOptions['10'] = "Softsign"
+            activationOptions['11'] = "Softplus"
+            activationOptions['12'] = "0-# for activation function information... Not Yet Implemented"
+
+            fullyConnectedOptions = {}
+            fullyConnectedOptions['1'] = "Linear"
+            fullyConnectedOptions['2'] = "Sigmoid"
+            fullyConnectedOptions['3'] = "Tanh"
+            fullyConnectedOptions['4'] = "ReLU"
+            fullyConnectedOptions['5'] = "LReLU"
+            fullyConnectedOptions['6'] = "PReLU"
+            fullyConnectedOptions['7'] = "ELU"
+            fullyConnectedOptions['8'] = "SELU"
+            fullyConnectedOptions['9'] = "GELU"
+            fullyConnectedOptions['10'] = "Softsign"
+            fullyConnectedOptions['11'] = "Softplus"
+            fullyConnectedOptions['12'] = "Softmax"
+            fullyConnectedOptions['13'] = "0-# for activation function information... Not Yet Implemented"
+
+            layer = 0
+            while True:
+                for entry in layerTypes.keys():
+                    print(entry, layerTypes[entry])
+                layerType = layerTypes[input("Select Layer " + str(layer) + " Type:")]
+                print("\n")
+
+                if layerType == "Convolution 2D":
+                    for l in range(1, layer + 1):
+                        if NeuralNetworkStructure[layer - l]["Layer Type"] == "Max Pooling 2D":
+                            break
+                        elif NeuralNetworkStructure[layer - l]["Layer Type"] == "Min Pooling 2D":
+                            break
+                        elif NeuralNetworkStructure[layer - l]["Layer Type"] == "Mean Pooling 2D":
+                            break
+                        elif NeuralNetworkStructure[layer - l]["Layer Type"] == "L2 Pooling 2D":
+                            break
+                        elif NeuralNetworkStructure[layer - l]["Layer Type"] == "Convolution 2D":
+                            break
+                        elif NeuralNetworkStructure[layer - l]["Layer Type"] == "Inverse Flatten 2D":
+                            break
+                        elif NeuralNetworkStructure[layer - l]["Layer Type"] == "Flatten 2D":
+                            # If there is a Flatten 2D Layer before, insert an Inverse Flatten 2D layer
+                            NeuralNetworkStructure.append({"Layer Type": "Inverse Flatten 2D"})
+                            NeuralNetworkStructure[layer]["Input Shape"] = NeuralNetworkStructure[layer - 1][
+                                "Output Shape"]
+                            print("Inserted Inverse Flatten 2D Layer\n")
+                            while True:
+                                print("Input size must equal", NeuralNetworkStructure[layer]["Input Shape"][0])
+                                oH = int(input(layerType + " Layer Input Height: "))
+                                oW = int(input(layerType + " Layer Input Width: "))
+                                oC = int(input(layerType + " Layer Number of Input Channels: "))
+                                if oH * oW * oC == NeuralNetworkStructure[layer]["Input Shape"][0]:
+                                    NeuralNetworkStructure[layer]["Output Shape"] = [oC, oH, oW]
+                                    break
+                                print("Please try again.")
+                            layer = layer + 1
+                            break
+                        elif NeuralNetworkStructure[layer - l]["Layer Type"] == "Fully Connected":
+                            # If there is a Fully Connected Layer before, insert an Inverse Flatten 2D layer
+                            NeuralNetworkStructure.append({"Layer Type": "Inverse Flatten 2D"})
+                            NeuralNetworkStructure[layer]["Input Shape"] = NeuralNetworkStructure[layer - 1][
+                                "Output Shape"]
+                            print("Inserted Inverse Flatten 2D Layer\n")
+                            while True:
+                                print("Input size must equal", NeuralNetworkStructure[layer]["Input Shape"][0])
+                                oH = int(input(layerType + " Layer Input Height: "))
+                                oW = int(input(layerType + " Layer Input Width: "))
+                                oC = int(input(layerType + " Layer Number of Input Channels: "))
+                                if oH * oW * oC == NeuralNetworkStructure[layer]["Input Shape"][0]:
+                                    NeuralNetworkStructure[layer]["Output Shape"] = [oC, oH, oW]
+                                    break
+                                print("Please try again.")
+                            layer = layer + 1
+                            break
+
+                    # If loop runs into a Convolution 2D layer before a Activation or Fully Connected layer, it will initialize the weights.
+                    for l in range(1, layer + 1):
+                        if NeuralNetworkStructure[layer - l]["Layer Type"] == "Activation" or NeuralNetworkStructure[layer - l]["Layer Type"] == "Fully Connected":
+                            break
+                        elif NeuralNetworkStructure[layer - l]["Layer Type"] == "Convolution 2D":
+                            kernelShape = NeuralNetworkStructure[layer - l]["Kernel Shape"]
+                            outputShape = NeuralNetworkStructure[layer - l]["Output Shape"]
+                            distribution = NeuralNetworkStructure[layer - l]["Initial Weight Distribution"]
+                            fanIn = kernelShape[2] * kernelShape[3]
+                            fanOut = outputShape[1] * outputShape[2]
+                            NeuralNetworkStructure[layer - l]["Kernels"] = ParameterInitializer.initializeWeights(fanIn, fanOut, kernelShape, "Linear", distribution)
+                            print("Layer", layer - l, "Kernels Initialized")
+                            break
+
+                    if layer == 0:
+                        iH = int(input("Convolution 2D Layer Input Height"))
+                        iW = int(input("Convolution 2D Layer Input Width"))
+                        iC = int(input("Convolution 2D Layer Number of Input Channels"))
+                        inputShape = [iC, iH, iW]
+                    else:
+                        inputShape = NeuralNetworkStructure[layer - 1]["Output Shape"]
+                    iC = inputShape[0]
+                    kH = int(input("Convolution 2D Layer Kernel Height: "))
+                    kW = int(input("Convolution 2D Layer Kernel Width: "))
+                    oC = int(input("Convolution 2D Layer Number of Kernels"))
+                    kernelShape = [oC, iC, kH, kW]
+                    while True:
+                        distribution = input("Initial Convolution 2D Layer Kernel Weight Distribution (Gaussian or Uniform): ")
+                        if distribution == "Gaussian" or distribution == "Uniform":
+                            break
+                        print("Did Not Understand. Please Try Again.\n")
+                    stride = int(input("Convolution 2D Layer Stride: "))
+                    while True:
+                        ifBufferInput = input("Buffer (Yes or No): ")
+                        if ifBufferInput == "Yes":
+                            ifBuffer = True
+                            break
+                        elif ifBufferInput == "No":
+                            ifBuffer = False
+                            break
+                        print("Did Not Understand. Please Try Again.\n")
+
+                    outputShape = ConvolutionLayer2D.calcOutputShape(inputShape, kernelShape, stride, ifBuffer)
+                    biases = ParameterInitializer.initializeBiases(outputShape)
+                    NeuralNetworkStructure.append({"Layer Type": layerType})
+                    NeuralNetworkStructure[layer]["Input Shape"] = inputShape
+                    NeuralNetworkStructure[layer]["Kernel Shape"] = kernelShape
+                    NeuralNetworkStructure[layer]["Output Shape"] = outputShape
+                    NeuralNetworkStructure[layer]["Stride"] = stride
+                    NeuralNetworkStructure[layer]["If Buffer"] = ifBuffer
+                    NeuralNetworkStructure[layer]["Initial Weight Distribution"] = distribution
+                    NeuralNetworkStructure[layer]["Biases"] = biases
+                    print("\nLayer", layer, "Data:\n")
+                    for entry in NeuralNetworkStructure[layer].keys():
+                        print(entry, ":", NeuralNetworkStructure[layer][entry])
+                    print("\nKernels will be generated when the next activation function is defined.\n")
+                    layer = layer + 1
+                elif layerType == "Max Pooling 2D" or layerType == "Min Pooling 2D" or layerType == "Mean Pooling 2D" or layerType == "L2 Pooling 2D":
+                    for l in range(1, layer + 1):
+                        if NeuralNetworkStructure[layer - l]["Layer Type"] == "Max Pooling 2D":
+                            break
+                        elif NeuralNetworkStructure[layer - l]["Layer Type"] == "Min Pooling 2D":
+                            break
+                        elif NeuralNetworkStructure[layer - l]["Layer Type"] == "Mean Pooling 2D":
+                            break
+                        elif NeuralNetworkStructure[layer - l]["Layer Type"] == "L2 Pooling 2D":
+                            break
+                        elif NeuralNetworkStructure[layer - l]["Layer Type"] == "Convolution 2D":
+                            break
+                        elif NeuralNetworkStructure[layer - l]["Layer Type"] == "Inverse Flatten 2D":
+                            break
+                        elif NeuralNetworkStructure[layer - l]["Layer Type"] == "Flatten 2D":
+                            # If there is a Flatten 2D Layer before, insert an Inverse Flatten 2D layer
+                            NeuralNetworkStructure.append({"Layer Type": "Inverse Flatten 2D"})
+                            NeuralNetworkStructure[layer]["Input Shape"] = NeuralNetworkStructure[layer - 1][
+                                "Output Shape"]
+                            print("Inserted Inverse Flatten 2D Layer\n")
+                            while True:
+                                print("Input size must equal", NeuralNetworkStructure[layer]["Input Shape"][0])
+                                oH = int(input(layerType + " Layer Input Height: "))
+                                oW = int(input(layerType + " Layer Input Width: "))
+                                oC = int(input(layerType + " Layer Number of Input Channels: "))
+                                if oH * oW * oC == NeuralNetworkStructure[layer]["Input Shape"][0]:
+                                    NeuralNetworkStructure[layer]["Output Shape"] = [oC, oH, oW]
+                                    break
+                                print("Please try again.")
+                            layer = layer + 1
+                            break
+                        elif NeuralNetworkStructure[layer - l]["Layer Type"] == "Fully Connected":
+                            # If there is a Fully Connected Layer before, insert an Inverse Flatten 2D layer
+                            NeuralNetworkStructure.append({"Layer Type": "Inverse Flatten 2D"})
+                            NeuralNetworkStructure[layer]["Input Shape"] = NeuralNetworkStructure[layer - 1][
+                                "Output Shape"]
+                            print("Inserted Inverse Flatten 2D Layer\n")
+                            while True:
+                                print("Input size must equal", NeuralNetworkStructure[layer]["Input Shape"][0])
+                                oH = int(input(layerType + " Layer Input Height: "))
+                                oW = int(input(layerType + " Layer Input Width: "))
+                                oC = int(input(layerType + " Layer Number of Input Channels: "))
+                                if oH * oW * oC == NeuralNetworkStructure[layer]["Input Shape"][0]:
+                                    NeuralNetworkStructure[layer]["Output Shape"] = [oC, oH, oW]
+                                    break
+                                print("Please try again.")
+                            layer = layer + 1
+                            break
+                    if layer == 0:
+                        iH = int(input(layerType + " Layer Input Height: "))
+                        iW = int(input(layerType + " Layer Input Width: "))
+                        iC = int(input(layerType + " Layer Number of Input Channels: "))
+                        inputShape = [iC, iH, iW]
+                    else:
+                        inputShape = NeuralNetworkStructure[layer - 1]["Output Shape"]
+                    kH = int(input(layerType + " Layer Kernel Height: "))
+                    kW = int(input(layerType + " Layer Kernel Width: "))
+                    kernelShape = [kH, kW]
+                    stride = int(input(layerType + " Layer Stride: "))
+                    outputShape = PoolingLayer2D.calcOutputShape(inputShape, kernelShape, stride)
+                    NeuralNetworkStructure.append({"Layer Type": layerType})
+                    NeuralNetworkStructure[layer]["Input Shape"] = inputShape
+                    NeuralNetworkStructure[layer]["Kernel Shape"] = kernelShape
+                    NeuralNetworkStructure[layer]["Output Shape"] = outputShape
+                    NeuralNetworkStructure[layer]["Stride"] = stride
+                    print("\nLayer", layer, "Data:\n")
+                    for entry in NeuralNetworkStructure[layer].keys():
+                        print(entry, ":", NeuralNetworkStructure[layer][entry])
+                    layer = layer + 1
+                elif layerType == "Flatten 2D":
+                    for l in range(1, layer + 1):
+                        if NeuralNetworkStructure[layer - l]["Layer Type"] == "Max Pooling 2D":
+                            break
+                        elif NeuralNetworkStructure[layer - l]["Layer Type"] == "Min Pooling 2D":
+                            break
+                        elif NeuralNetworkStructure[layer - l]["Layer Type"] == "Mean Pooling 2D":
+                            break
+                        elif NeuralNetworkStructure[layer - l]["Layer Type"] == "L2 Pooling 2D":
+                            break
+                        elif NeuralNetworkStructure[layer - l]["Layer Type"] == "Convolution 2D":
+                            break
+                        elif NeuralNetworkStructure[layer - l]["Layer Type"] == "Inverse Flatten 2D":
+                            break
+                        elif NeuralNetworkStructure[layer - l]["Layer Type"] == "Flatten 2D":
+                            # If there is a Flatten 2D Layer before, insert an Inverse Flatten 2D layer
+                            NeuralNetworkStructure.append({"Layer Type": "Inverse Flatten 2D"})
+                            NeuralNetworkStructure[layer]["Input Shape"] = NeuralNetworkStructure[layer - 1][
+                                "Output Shape"]
+                            print("Inserted Inverse Flatten 2D Layer\n")
+                            while True:
+                                print("Input size must equal", NeuralNetworkStructure[layer]["Input Shape"][0])
+                                oH = int(input(layerType + " Layer Input Height: "))
+                                oW = int(input(layerType + " Layer Input Width: "))
+                                oC = int(input(layerType + " Layer Number of Input Channels: "))
+                                if oH * oW * oC == NeuralNetworkStructure[layer]["Input Shape"][0]:
+                                    NeuralNetworkStructure[layer]["Output Shape"] = [iC, iH, iW]
+                                    break
+                                print("Please try again.")
+                            layer = layer + 1
+                            break
+                        elif NeuralNetworkStructure[layer - l]["Layer Type"] == "Fully Connected":
+                            # If there is a Fully Connected Layer before, insert an Inverse Flatten 2D layer
+                            NeuralNetworkStructure.append({"Layer Type": "Inverse Flatten 2D"})
+                            NeuralNetworkStructure[layer]["Input Shape"] = NeuralNetworkStructure[layer - 1][
+                                "Output Shape"]
+                            print("Inserted Inverse Flatten 2D Layer\n")
+                            while True:
+                                print("Input size must equal", NeuralNetworkStructure[layer]["Input Shape"][0])
+                                oH = int(input(layerType + " Layer Input Height: "))
+                                oW = int(input(layerType + " Layer Input Width: "))
+                                oC = int(input(layerType + " Layer Number of Input Channels: "))
+                                if oH * oW * oC == NeuralNetworkStructure[layer]["Input Shape"][0]:
+                                    NeuralNetworkStructure[layer]["Output Shape"] = [iC, iH, iW]
+                                    break
+                                print("Please try again.")
+                            layer = layer + 1
+                            break
+                    if layer == 0:
+                        iH = int(input("Flatten 2D Layer Input Height: "))
+                        iW = int(input("Flatten 2D Layer Input Width: "))
+                        iC = int(input("Flatten 2D Layer Number of Input Channels: "))
+                        inputShape = [iC, iH, iW]
+                    else:
+                        inputShape = NeuralNetworkStructure[layer - 1]["Output Shape"]
+                    outputShape = [iC*iH*iC, 1]
+                    NeuralNetworkStructure.append({"Layer Type": layerType})
+                    NeuralNetworkStructure[layer]["Input Shape"] = inputShape
+                    NeuralNetworkStructure[layer]["Output Shape"] = outputShape
+                    print("\nLayer", layer, "Data:\n")
+                    for entry in NeuralNetworkStructure[layer].keys():
+                        print(entry, ":", NeuralNetworkStructure[layer][entry])
+                    layer = layer + 1
+                elif layerType == "Inverse Flatten 2D":
+                    for l in range(1, layer + 1):
+                        if NeuralNetworkStructure[layer - l]["Layer Type"] == "Flatten 2D":
+                            break
+                        elif NeuralNetworkStructure[layer - l]["Layer Type"] == "Fully Connected":
+                            break
+                        elif NeuralNetworkStructure[layer - l]["Layer Type"] == "Convolution 2D":
+                            NeuralNetworkStructure.append({"Layer Type": "Flatten 2D"})
+                            NeuralNetworkStructure[layer]["Input Shape"] = NeuralNetworkStructure[layer - 1][
+                                "Output Shape"]
+                            NeuralNetworkStructure[layer]["Output Shape"] = [
+                                np.prod(NeuralNetworkStructure[layer]["Input Shape"]), 1]
+                            print("Inserted Flatten 2D Layer\n")
+                            layer = layer + 1
+                            break
+                        elif NeuralNetworkStructure[layer - l]["Layer Type"] == "Max Pooling 2D":
+                            NeuralNetworkStructure.append({"Layer Type": "Flatten 2D"})
+                            NeuralNetworkStructure[layer]["Input Shape"] = NeuralNetworkStructure[layer - 1][
+                                "Output Shape"]
+                            NeuralNetworkStructure[layer]["Output Shape"] = [
+                                np.prod(NeuralNetworkStructure[layer]["Input Shape"]), 1]
+                            print("Inserted Flatten 2D Layer\n")
+                            layer = layer + 1
+                            break
+                        elif NeuralNetworkStructure[layer - l]["Layer Type"] == "Min Pooling 2D":
+                            NeuralNetworkStructure.append({"Layer Type": "Flatten 2D"})
+                            NeuralNetworkStructure[layer]["Input Shape"] = NeuralNetworkStructure[layer - 1][
+                                "Output Shape"]
+                            NeuralNetworkStructure[layer]["Output Shape"] = [
+                                np.prod(NeuralNetworkStructure[layer]["Input Shape"]), 1]
+                            print("Inserted Flatten 2D Layer\n")
+                            layer = layer + 1
+                            break
+                        elif NeuralNetworkStructure[layer - l]["Layer Type"] == "Mean Pooling 2D":
+                            NeuralNetworkStructure.append({"Layer Type": "Flatten 2D"})
+                            NeuralNetworkStructure[layer]["Input Shape"] = NeuralNetworkStructure[layer - 1][
+                                "Output Shape"]
+                            NeuralNetworkStructure[layer]["Output Shape"] = [
+                                np.prod(NeuralNetworkStructure[layer]["Input Shape"]), 1]
+                            print("Inserted Flatten 2D Layer\n")
+                            layer = layer + 1
+                            break
+                        elif NeuralNetworkStructure[layer - l]["Layer Type"] == "L2 Pooling 2D":
+                            NeuralNetworkStructure.append({"Layer Type": "Flatten 2D"})
+                            NeuralNetworkStructure[layer]["Input Shape"] = NeuralNetworkStructure[layer - 1][
+                                "Output Shape"]
+                            NeuralNetworkStructure[layer]["Output Shape"] = [
+                                np.prod(NeuralNetworkStructure[layer]["Input Shape"]), 1]
+                            print("Inserted Flatten 2D Layer\n")
+                            layer = layer + 1
+                            break
+                        elif NeuralNetworkStructure[layer - l]["Layer Type"] == "Inverse Flatten 2D":
+                            NeuralNetworkStructure.append({"Layer Type": "Flatten 2D"})
+                            NeuralNetworkStructure[layer]["Input Shape"] = NeuralNetworkStructure[layer - 1][
+                                "Output Shape"]
+                            NeuralNetworkStructure[layer]["Output Shape"] = [
+                                np.prod(NeuralNetworkStructure[layer]["Input Shape"]), 1]
+                            print("Inserted Flatten 2D Layer\n")
+                            layer = layer + 1
+                            break
+                    if layer == 0:
+                        iH = int(input("Inverse Flatten 2D Layer Input Height: "))
+                        inputShape = [iH, 1]
+                    else:
+                        inputShape = NeuralNetworkStructure[layer - 1]["Output Shape"]
+
+                    while True:
+                        print("Output size must equal", inputShape[0])
+                        oH = int(input("Inverse Flatten 2D Layer Output Height: "))
+                        oW = int(input("Inverse Flatten 2D Layer Output Width: "))
+                        oC = int(input("Inverse Flatten 2D Layer Number of Output Channels: "))
+                        if oH*oW*oC == inputShape[0]:
+                            outputShape = [oC, oH, oW]
+                            break
+                        print("Please try again.")
+                    NeuralNetworkStructure.append({"Layer Type": layerType})
+                    NeuralNetworkStructure[layer]["Input Shape"] = inputShape
+                    NeuralNetworkStructure[layer]["Output Shape"] = outputShape
+                    print("\nLayer", layer, "Data:\n")
+                    for entry in NeuralNetworkStructure[layer].keys():
+                        print(entry, ":", NeuralNetworkStructure[layer][entry])
+                    layer = layer + 1
+                elif layerType == "Activation":
+                    if layer == 0:
+                        print("Possible formats:")
+                        print("1 (iC, iH, iW)")
+                        print("2 (iH, 1)")
+                        type = int(input("Select Input Shape:"))
+                        if type == 1:
+                            iH = int(input("Activation Layer Input Height: "))
+                            iW = int(input("Activation Layer Input Width: "))
+                            iC = int(input("Activation Layer Number of Input Channels: "))
+                            inputShape =[iC, iH, iW]
+                        else:
+                            iH = int(input("Activation Layer Input Height: "))
+                            inputShape = [iH, 1]
+                        outputShape = inputShape
+                    else:
+                        inputShape = NeuralNetworkStructure[layer - 1]["Output Shape"]
+                        outputShape = inputShape
+                    print("Activation Functions:")
+                    for entry in activationOptions.keys():
+                        print(entry, activationOptions[entry])
+                    activationFunction = activationOptions[input("Select Activation Function: ")]
+                    constants = ParameterInitializer.initializeConstants(outputShape, activationFunction)
+                    NeuralNetworkStructure.append({"Layer Type": layerType})
+                    NeuralNetworkStructure[layer]["Input Shape"] = inputShape
+                    NeuralNetworkStructure[layer]["Output Shape"] = outputShape
+                    NeuralNetworkStructure[layer]["Activation Function"] = activationFunction
+                    NeuralNetworkStructure[layer]["Constants"] = constants
+                    # If loop runs into a Convolution 2D layer before a Activation or Fully Connected layer, it will initialize the weights.
+                    for l in range(1, layer + 1):
+                        if NeuralNetworkStructure[layer - l]["Layer Type"] == "Activation" or NeuralNetworkStructure[layer - l]["Layer Type"] == "Fully Connected":
+                            break
+                        elif NeuralNetworkStructure[layer - l]["Layer Type"] == "Convolution 2D":
+                            kernelShape = NeuralNetworkStructure[layer - l]["Kernel Shape"]
+                            outputShape = NeuralNetworkStructure[layer - l]["Output Shape"]
+                            distribution = NeuralNetworkStructure[layer - l]["Initial Weight Distribution"]
+                            fanIn = kernelShape[2] * kernelShape[3]
+                            fanOut = outputShape[1] * outputShape[2]
+                            NeuralNetworkStructure[layer - l]["Kernels"] = ParameterInitializer.initializeWeights(fanIn, fanOut, kernelShape, activationFunction, distribution)
+                            print("Layer", layer - l, "Kernels Initialized")
+                            break
+                    print("\nLayer", layer, "Data:\n")
+                    for entry in NeuralNetworkStructure[layer].keys():
+                        print(entry, ":", NeuralNetworkStructure[layer][entry])
+                    layer = layer + 1
+                elif layerType == "Fully Connected":
+                    for l in range(1, layer + 1):
+                        if NeuralNetworkStructure[layer - l]["Layer Type"] == "Flatten 2D":
+                            break
+                        elif NeuralNetworkStructure[layer - l]["Layer Type"] == "Fully Connected":
+                            break
+                        elif NeuralNetworkStructure[layer - l]["Layer Type"] == "Convolution 2D":
+                            NeuralNetworkStructure.append({"Layer Type": "Flatten 2D"})
+                            NeuralNetworkStructure[layer]["Input Shape"] = NeuralNetworkStructure[layer - 1][
+                                "Output Shape"]
+                            NeuralNetworkStructure[layer]["Output Shape"] = [
+                                np.prod(NeuralNetworkStructure[layer]["Input Shape"]), 1]
+                            print("Inserted Flatten 2D Layer\n")
+                            layer = layer + 1
+                            break
+                        elif NeuralNetworkStructure[layer - l]["Layer Type"] == "Max Pooling 2D":
+                            NeuralNetworkStructure.append({"Layer Type": "Flatten 2D"})
+                            NeuralNetworkStructure[layer]["Input Shape"] = NeuralNetworkStructure[layer - 1][
+                                "Output Shape"]
+                            NeuralNetworkStructure[layer]["Output Shape"] = [
+                                np.prod(NeuralNetworkStructure[layer]["Input Shape"]), 1]
+                            print("Inserted Flatten 2D Layer\n")
+                            layer = layer + 1
+                            break
+                        elif NeuralNetworkStructure[layer - l]["Layer Type"] == "Min Pooling 2D":
+                            NeuralNetworkStructure.append({"Layer Type": "Flatten 2D"})
+                            NeuralNetworkStructure[layer]["Input Shape"] = NeuralNetworkStructure[layer - 1][
+                                "Output Shape"]
+                            NeuralNetworkStructure[layer]["Output Shape"] = [
+                                np.prod(NeuralNetworkStructure[layer]["Input Shape"]), 1]
+                            print("Inserted Flatten 2D Layer\n")
+                            layer = layer + 1
+                            break
+                        elif NeuralNetworkStructure[layer - l]["Layer Type"] == "Mean Pooling 2D":
+                            NeuralNetworkStructure.append({"Layer Type": "Flatten 2D"})
+                            NeuralNetworkStructure[layer]["Input Shape"] = NeuralNetworkStructure[layer - 1][
+                                "Output Shape"]
+                            NeuralNetworkStructure[layer]["Output Shape"] = [
+                                np.prod(NeuralNetworkStructure[layer]["Input Shape"]), 1]
+                            print("Inserted Flatten 2D Layer\n")
+                            layer = layer + 1
+                            break
+                        elif NeuralNetworkStructure[layer - l]["Layer Type"] == "L2 Pooling 2D":
+                            NeuralNetworkStructure.append({"Layer Type": "Flatten 2D"})
+                            NeuralNetworkStructure[layer]["Input Shape"] = NeuralNetworkStructure[layer - 1][
+                                "Output Shape"]
+                            NeuralNetworkStructure[layer]["Output Shape"] = [
+                                np.prod(NeuralNetworkStructure[layer]["Input Shape"]), 1]
+                            print("Inserted Flatten 2D Layer\n")
+                            layer = layer + 1
+                            break
+                        elif NeuralNetworkStructure[layer - l]["Layer Type"] == "Inverse Flatten 2D":
+                            NeuralNetworkStructure.append({"Layer Type": "Flatten 2D"})
+                            NeuralNetworkStructure[layer]["Input Shape"] = NeuralNetworkStructure[layer - 1][
+                                "Output Shape"]
+                            NeuralNetworkStructure[layer]["Output Shape"] = [
+                                np.prod(NeuralNetworkStructure[layer]["Input Shape"]), 1]
+                            print("Inserted Flatten 2D Layer\n")
+                            layer = layer + 1
+                            break
+                    if layer == 0:
+                        iN = int(input("Fully Connected Layer Number of Input Neurons: "))
+                    else:
+                        minReq = NeuralNetworkStructure[layer - 1]["Output Shape"][0]
+                        while True:
+                            print("Number of Input Neurons must be >=", minReq)
+                            iN = int(input("Fully Connected Layer Number of Input Neurons: "))
+                            if iN >= minReq:
+                                break
+                            print("Please Try Again.")
+                    inputShape = [iN, 1]
+                    oN = int(input("Fully Connected Layer Number of Output Neurons: "))
+                    for entry in fullyConnectedOptions.keys():
+                        print(entry, fullyConnectedOptions[entry])
+                    activationFunction = fullyConnectedOptions[input("Select Activation Function: ")]
+
+                    # If loop runs into a Convolution 2D layer before a Activation or Fully Connected layer, it will initialize the weights.
+                    for l in range(1, layer + 1):
+                        if NeuralNetworkStructure[layer - l]["Layer Type"] == "Activation" or NeuralNetworkStructure[layer - l]["Layer Type"] == "Fully Connected":
+                            break
+                        elif NeuralNetworkStructure[layer - l]["Layer Type"] == "Convolution 2D":
+                            kernelShape = NeuralNetworkStructure[layer - l]["Kernel Shape"]
+                            outputShape = NeuralNetworkStructure[layer - l]["Output Shape"]
+                            distribution = NeuralNetworkStructure[layer - l]["Initial Weight Distribution"]
+                            fanIn = kernelShape[2] * kernelShape[3]
+                            fanOut = outputShape[1] * outputShape[2]
+                            NeuralNetworkStructure[layer - l]["Kernels"] = ParameterInitializer.initializeWeights(fanIn, fanOut, kernelShape, activationFunction, distribution)
+                            print("Layer", layer - l, "Kernels Initialized")
+                            break
+
+                    outputShape = [oN, 1]
+                    while True:
+                        distribution = input("Initial Fully Connected Layer Weight Distribution (Gaussian or Uniform): ")
+                        if distribution == "Gaussian" or distribution == "Uniform":
+                            break
+                        print("Did Not Understand. Please Try Again.\n")
+                    weights = ParameterInitializer.initializeWeights(iN, oN, [oN, iN], activationFunction, distribution)
+                    biases = ParameterInitializer.initializeBiases(outputShape)
+                    constants = ParameterInitializer.initializeConstants(outputShape, activationFunction)
+                    NeuralNetworkStructure.append({"Layer Type": layerType})
+                    NeuralNetworkStructure[layer]["Input Shape"] = inputShape
+                    NeuralNetworkStructure[layer]["Output Shape"] = outputShape
+                    NeuralNetworkStructure[layer]["Activation Function"] = activationFunction
+                    NeuralNetworkStructure[layer]["Weights"] = weights
+                    NeuralNetworkStructure[layer]["Biases"] = biases
+                    NeuralNetworkStructure[layer]["Constants"] = constants
+                    for entry in NeuralNetworkStructure[layer].keys():
+                        print(entry, ":", NeuralNetworkStructure[layer][entry])
+                    layer = layer + 1
+                elif layerType == "Done":
+                    # If loop runs into a Convolution 2D layer before a Activation or Fully Connected layer, it will initialize the weights.
+                    for l in range(1, layer + 1):
+                        if NeuralNetworkStructure[layer - l]["Layer Type"] == "Activation" or \
+                                NeuralNetworkStructure[layer - l]["Layer Type"] == "Fully Connected":
+                            break
+                        elif NeuralNetworkStructure[layer - l]["Layer Type"] == "Convolution 2D":
+                            kernelShape = NeuralNetworkStructure[layer - l]["Kernel Shape"]
+                            outputShape = NeuralNetworkStructure[layer - l]["Output Shape"]
+                            distribution = NeuralNetworkStructure[layer - l]["Initial Weight Distribution"]
+                            fanIn = kernelShape[2] * kernelShape[3]
+                            fanOut = outputShape[1] * outputShape[2]
+                            NeuralNetworkStructure[layer - l]["Kernels"] = ParameterInitializer.initializeWeights(fanIn, fanOut, kernelShape, "Linear", distribution)
+                            print("Layer", layer - l, "Kernels Initialized")
+                            break
+                    for l in np.arange(0, layer):
+                        print("\nLayer", l,"Information:")
+                        for entry in NeuralNetworkStructure[l].keys():
+                            print(entry, ":", NeuralNetworkStructure[l][entry])
+                    break
+        # Use NeuralNetworkStructure to build NeuralNetwork
+        for layer in NeuralNetworkStructure:
+            if layer["Layer Type"] == "Convolution 2D":
+                inputShape = layer["Input Shape"]
+                kernels = layer["Kernels"]
+                biases = layer["Biases"]
+                stride = layer["Stride"]
+                ifBuffer = layer["If Buffer"]
+                NeuralNetwork.append(ConvolutionLayer2D(inputShape, kernels, biases, stride, ifBuffer))
+            elif layer["Layer Type"] == "Max Pooling 2D":
+                inputShape = layer["Input Shape"]
+                kernelShape = layer["Kernel Shape"]
+                stride = layer["Stride"]
+                NeuralNetwork.append(MaxPooling2D(inputShape, kernelShape, stride))
+            elif layer["Layer Type"] == "Min Pooling 2D":
+                inputShape = layer["Input Shape"]
+                kernelShape = layer["Kernel Shape"]
+                stride = layer["Stride"]
+                NeuralNetwork.append(MinPooling2D(inputShape, kernelShape, stride))
+            elif layer["Layer Type"] == "Mean Pooling 2D":
+                inputShape = layer["Input Shape"]
+                kernelShape = layer["Kernel Shape"]
+                stride = layer["Stride"]
+                NeuralNetwork.append(MeanPooling2D(inputShape, kernelShape, stride))
+            elif layer["Layer Type"] == "L2 Pooling 2D":
+                inputShape = layer["Input Shape"]
+                kernelShape = layer["Kernel Shape"]
+                stride = layer["Stride"]
+                NeuralNetwork.append(L2Pooling2D(inputShape, kernelShape, stride))
+            elif layer["Layer Type"] == "Flatten 2D":
+                inputShape = layer["Input Shape"]
+                NeuralNetwork.append(FlattenLayer2D(inputShape))
+            elif layer["Layer Type"] == "Inverse Flatten 2D":
+                outputShape = layer["Output Shape"]
+                NeuralNetwork.append(InvertFlattenLayer2D(outputShape))
+            elif layer["Layer Type"] == "Activation":
+                constants = layer["Constants"]
+                activationFunction = layer["Activation Function"]
+                NeuralNetwork.append(ActivationLayer(constants, activationFunction))
+            elif layer["Layer Type"] == "Fully Connected":
+                weights = layer["Weights"]
+                biases = layer["Biases"]
+                constants = layer["Constants"]
+                activationFunction = layer["Activation Function"]
+                NeuralNetwork.append(FullyConnectedLayer(weights, biases, constants, activationFunction))
+        self.NeuralNetworkStructure = NeuralNetworkStructure
+        self.NeuralNetwork = NeuralNetwork
+
+    def runNeuralNetwork(self, inputActivations):
+        # inputActivations must be a list of arrays with shape (N, iH, 1) where N is constant and iH may be variable
+        # ex: [[[[1], [2], [3]], [[11], [12], [13]]], [[[4], [5]], [[14], [15]]]]
+        # ex: [[[[1], [2], [3]], [[11], [12], [13]]]]
+        # ex: [[[[1], [2], [3]]], [[[4], [5]]]]
+        # ex: [[[[1], [2], [3]]]]
+        inputSet = 0
+        activations = [np.array(inputActivations[inputSet])]
+        for layer in np.arange(0, np.size(self.NeuralNetwork)):
+            if layer > 0:
+                if self.NeuralNetworkStructure[layer]["Layer Type"] == "Fully Connected":
+                    if self.NeuralNetworkStructure[layer]["Input Size"] > self.NeuralNetworkStructure[layer - 1]["Output Size"]:
+                        inputSet = inputSet + 1
+                        activations[layer] = np.append[activations[layer], inputActivations[inputSet, 1]]
+            activations.append(self.NeuralNetwork[layer].forward(activations[layer]))
+        return activations
+
+class ParameterInitializer:
+
+    @classmethod
+    def initializeConstants(cls, outputShape, activationFunction):
+        # outputShape is either (fanOut, 1) or (oC, oH, oW)
+        # activationFunction is a string
+
+        if activationFunction == "LReLU":
+            print("Note: The value chosen will be uniform for this layer.")
+            print("Please choose a number >0 and <1")
+            constant = float(input("The constant that will be used for the LReLU activation function of this layer:"))
+            return constant*np.ones(outputShape)
+        elif activationFunction == "ELU":
+            print("Note: The value chosen will be uniform for this layer.")
+            print("Please choose a number >0")
+            constant = float(input("The constant that will be used for the ELU activation function of this layer:"))
+            return constant*np.ones(outputShape)
+        elif activationFunction == "PReLU":
+            # It should be fine that they all start the same as randomizing the weights will eliminate redundant symmetry
+            print("Note: The value chosen will be uniform for this layer.")
+            print("Please choose a number >0 and <1")
+            constant = float(input("The initial constant that will be used for the PReLU activation function of this layer:"))
+            return constant * np.ones(outputShape)
+        else:
+            return np.zeros(outputShape)
+
+    @classmethod
+    def initializeBiases(cls, outputShape):
+        # outputShape is either (fanOut, 1) or (oC, oH,oW)
+        return np.zeros(outputShape)
+
+    @classmethod
+    def initializeWeights(cls, fanIn, fanOut, weightShape, activationFunction, distribution):
+        # if fully connected weightShape is (fanOut, fanIn)
+        # else weightShape is (oC, iC, kW, kW), fanIn is kH*kW, and fanOut is oH*oW
+        # activation Function is a string
+        # distribution is either "Gaussian" or "Uniform"
+
+        if activationFunction == "ELU" or activationFunction == "SELU" or activationFunction == "GELU":
+            if distribution == "Gaussian":
+                return cls.LeCunGaussian(fanIn, weightShape)
+            elif distribution == "Uniform":
+                return cls.LeCunGaussian(fanIn, weightShape)
+        elif activationFunction == "ReLU" or activationFunction == "LReLU" or activationFunction == "PReLU":
+            if distribution == "Gaussian":
+                return cls.HeGaussian(fanIn, weightShape)
+            elif distribution == "Uniform":
+                return cls.HeGaussian(fanIn, weightShape)
+        else:
+            if distribution == "Gaussian":
+                return cls.XavierGaussian(fanIn, fanOut, weightShape)
+            elif distribution == "Uniform":
+                return cls.XavierGaussian(fanIn, fanOut, weightShape)
+
+    @staticmethod
+    def XavierGaussian(fanIn, fanOut, weightShape):
+        # fanIn is an int
+        # fanOut is an int
+        # weightShape is either (fanOut, fanIn) or (oC, iC, kH, kW)
+        stdDev = np.sqrt(2/(fanIn + fanOut))
+        mean = 0
+        weights = np.random.normal(mean, stdDev, weightShape)
+        return weights
+
+    @staticmethod
+    def XavierUniform(fanIn, fanOut, weightShape):
+        # fanIn is an int
+        # fanOut is an int
+        # weightShape is either (fanOut, fanIn) or (oC, iC, kH, kW)
+        var = np.sqrt(2*6/(fanIn + fanOut))
+        weights = np.random.uniform(-var/2, var/2, weightShape)
+        return weights
+
+    @staticmethod
+    def HeGaussian(fanIn, weightShape):
+        # fanIn is an int
+        # weightShape is either (fanOut, fanIn) or (oC, iC, kH, kW)
+        stdDev = np.sqrt(2/fanIn)
+        mean = 0
+        weights = np.random.normal(mean, stdDev, weightShape)
+        return weights
+
+    @staticmethod
+    def HeUniform(fanIn, weightShape):
+        # fanIn is an int
+        # weightShape is either (fanOut, fanIn) or (oC, iC, kH, kW)
+        var = np.sqrt(2*6/fanIn)
+        weights = np.random.uniform(-var/2, var/2, weightShape)
+        return weights
+
+    @staticmethod
+    def LeCunGaussian(fanIn, weightShape):
+        # fanIn is an int
+        # weightShape is either (fanOut, fanIn) or (oC, iC, kH, kW)
+        stdDev = np.sqrt(1/fanIn)
+        mean = 0
+        weights = np.random.normal(mean, stdDev, weightShape)
+        return weights
+
+    @staticmethod
+    def LeCunUniform(fanIn, weightShape):
+        # fanIn is an int
+        # weightShape is either (fanOut, fanIn) or (oC, iC, kH, kW)
+        var = np.sqrt(3/fanIn)
+        weights = np.random.uniform(-var/2, var/2, weightShape)
+        return weights
 
 
 class ActivationLayer:
@@ -29,7 +749,9 @@ class ActivationLayer:
         self.constants = constants
         self.activationFunction = activationFunction
 
-    def activation(self, z):
+    def forward(self, z):
+        # z is any shape
+        # output is same shape as z
         if self.activationFunction == "linear":
             return self.linearActivation(z)
         elif self.activationFunction == "sigmoid":
@@ -87,24 +809,32 @@ class ActivationLayer:
 
     @staticmethod
     def linearActivation(z):
+        # z is any shape
+        # output is same shape as z
         z = np.array(z)
         activation = z
         return activation
 
     @staticmethod
     def linearDerivative(z):
+        # z is any shape
+        # output is same shape as z
         z = np.array(z)
         aDerivativeZ = np.ones(z.shape)
         return aDerivativeZ
 
     @staticmethod
     def sigmoidActivation(z):
+        # z is any shape
+        # output is same shape as z
         z = np.array(z)
         activation = 1 / (1 + np.exp(-z))
         return activation
 
     @staticmethod
     def sigmoidDerivative(z):
+        # z is any shape
+        # output is same shape as z
         z = np.array(z)
         activation = ActivationLayer.sigmoidActivation(z)
         aDerivativeZ = activation * (1 - activation)
@@ -112,45 +842,59 @@ class ActivationLayer:
 
     @staticmethod
     def tanhActivation(z):
+        # z is any shape
+        # output is same shape as z
         z = np.array(z)
         activation = np.tanh(z)
         return activation
 
     @staticmethod
     def tanhDerivative(z):
+        # z is any shape
+        # output is same shape as z
         z = np.array(z)
         aDerivativeZ = 1 - np.power(z, 2)
         return aDerivativeZ
 
     @staticmethod
     def ReLUActivation(z):
+        # z is any shape
+        # output is same shape as z
         z = np.array(z)
         activation = z * (z >= 0)
         return activation
 
     @staticmethod
     def ReLUDerivative(z):
+        # z is any shape
+        # output is same shape as z
         z = np.array(z)
         aDerivativeZ = 1 * (z >= 0)
         return aDerivativeZ
 
     @staticmethod
     def LReLUActivation(z, constant):
-        # constant is a single float from 0 to 1
+        # z is any shape
+        # output is same shape as z
+        # constant is an array of floats from 0-1 same shape as z
         z = np.array(z)
         activation = (z * (z >= 0)) + (constant * z * (z < 0))
         return activation
 
     @staticmethod
     def LReLUDerivative(z, constant):
-        # constant is a single float from 0 to 1
+        # z is any shape
+        # output is same shape as z
+        # constant is an array of floats from 0-1 same shape as z
         z = np.array(z)
         aDerivativeZ = (1 * (z >= 0)) + (constant * (z < 0))
         return aDerivativeZ
 
     @staticmethod
     def PReLUActivation(z, constant):
-        # constant is an array of floats from 0-1 same dim as z
+        # z is any shape
+        # output is same shape as z
+        # constant is an array of floats from 0-1 same shape as z
         z = np.array(z)
         constant = np.array(constant)
         activation = (z * (z >= 0)) + (constant * z * (z < 0))
@@ -158,7 +902,9 @@ class ActivationLayer:
 
     @staticmethod
     def PReLUDerivative(z, constant):
-        # constant is an array of floats from 0-1 same dim as z
+        # z is any shape
+        # output is same shape as z
+        # constant is an array of floats from 0-1 same shape as z
         z = np.array(z)
         constant = np.array(constant)
         aDerivativeZ = (1 * (z >= 0)) + (constant * (z < 0))
@@ -167,20 +913,26 @@ class ActivationLayer:
 
     @staticmethod
     def ELUActivation(z, constant):
-        # constant is a single float > 0
+        # z is any shape
+        # output is same shape as z
+        # constant is an array of floats >0 same shape as z
         z = np.array(z)
         activation = (z * (z >= 0)) + (constant * (np.exp(z) - 1) * (z < 0))
         return activation
 
     @staticmethod
     def ELUDerivative(z, constant):
-        # constant is a single float > 0
+        # z is any shape
+        # output is same shape as z
+        # constant is an array of floats >0 same shape as z
         z = np.array(z)
         aDerivativeZ = (1 * (z >= 0)) + (constant * np.exp(z) * (z < 0))
         return aDerivativeZ
 
     @staticmethod
     def SELUActivation(z):
+        # z is any shape
+        # output is same shape as z
         alphaConstant = 1.6732632423543772848170429916717
         lambdaConstant = 1.0507009873554804934193349852946
         z = np.array(z)
@@ -189,6 +941,8 @@ class ActivationLayer:
 
     @staticmethod
     def SELUDerivative(z):
+        # z is any shape
+        # output is same shape as z
         alphaConstant = 1.6732632423543772848170429916717
         lambdaConstant = 1.0507009873554804934193349852946
         z = np.array(z)
@@ -197,12 +951,16 @@ class ActivationLayer:
 
     @staticmethod
     def GELUActivtion(z):
+        # z is any shape
+        # output is same shape as z
         z = np.array(z)
         activation = 0.5 * z * (1 + np.tanh(np.sqrt(2 / np.pi) * (z + (0.044715 * np.power(z, 3)))))
         return activation
 
     @staticmethod
     def GELUDerivative(z):
+        # z is any shape
+        # output is same shape as z
         z = np.array(z)
         aDerivativeZ = (0.5 * np.tanh((0.0356774 * np.power(z, 3)) + (0.797885 * z))) + (
                     ((0.535161 * np.power(z, 3)) + (0.398942 * z)) * np.power(
@@ -211,12 +969,16 @@ class ActivationLayer:
 
     @staticmethod
     def softsignActivation(z):
+        # z is any shape
+        # output is same shape as z
         z = np.array(z)
         activation = z / (np.abs(z) + 1)
         return activation
 
     @staticmethod
     def softsignDerivative(z):
+        # z is any shape
+        # output is same shape as z
         z = np.array(z)
         absolute = np.abs(z)
         aDerivativeZ = ((z >= 0) * (absolute + 1 - z) / np.power(np.abs(z) + 1, 2)) + (
@@ -225,24 +987,32 @@ class ActivationLayer:
 
     @staticmethod
     def softplusActivation(z):
+        # z is any shape
+        # output is same shape as z
         z = np.array(z)
         activation = np.log(1 + np.exp(z))
         return activation
 
     @classmethod
     def softplusDerivative(cls,z):
+        # z is any shape
+        # output is same shape as z
         z = np.array(z)
         aDerivativeZ = cls.sigmoidActivation(z)
         return aDerivativeZ
 
     @staticmethod
     def softmaxActivation(z):
+        # z is shape (N, iH, 1)
+        # output is shape (N, iH, 1)
         z = np.array(z)
         activation = z / np.sum(z, 0)
         return activation
 
     @classmethod
     def softmaxDerivative(cls, z):
+        # z is shape (N, iH, 1)
+        # output is shape (N, iH, 1)
         z = np.array(z)
         activation = cls.softmaxActivation(z)
         diagMatrix = cls.diagMat(activation)
@@ -253,7 +1023,7 @@ class ActivationLayer:
     @staticmethod
     def diagMat(inputStack):
         # Custom method that takes (N, m, 1) or (N, 1, m) array
-        # And outputs (n, m, m) diagonal matrices
+        # And outputs (N, m, m) diagonal matrices
         inputStack = np.array(inputStack)
         diagMatrix = np.array([])
         for N in inputStack:
@@ -278,6 +1048,35 @@ class FullyConnectedLayer(ActivationLayer):
         self.biases = biases
         self.constants = constants
         self.activationFunction = activationFunction
+
+    def forward(self, inputActivations):
+        # inputActivations is shape (N, iH, 1)
+        # output is shape (N, oH, 1)
+        z = self.calcZ(self.weights, self.biases, inputActivations)
+        if self.activationFunction == "linear":
+            return self.linearActivation(z)
+        elif self.activationFunction == "sigmoid":
+            return self.sigmoidActivation(z)
+        elif self.activationFunction == "tanh":
+            return self.tanhActivation(z)
+        elif self.activationFunction == "ReLU":
+            return self.ReLUActivation(z)
+        elif self.activationFunction == "LReLU":
+            return self.LReLUActivation(z, self.constants)
+        elif self.activationFunction == "PReLU":
+            return self.PReLUActivation(z, self.constants)
+        elif self.activationFunction == "ELU":
+            return self.ELUActivation(z, self.constants)
+        elif self.activationFunction == "SELU":
+            return self.SELUActivation(z)
+        elif self.activationFunction == "GELU":
+            return self.GELUActivtion(z)
+        elif self.activationFunction == "softsign":
+            return self.softsignActivation(z)
+        elif self.activationFunction == "softplus":
+            return self.softplusActivation(z)
+        elif self.activationFunction == "softmax":
+            return self.softmaxActivation(z)
 
     @staticmethod
     def calcZ(weights, biases, prevActivations):
@@ -379,9 +1178,9 @@ class ConvolutionLayer2D:
         self.oC = self.kernels.shape[0]
         self.kH = self.kernels.shape[2]
         self.kW = self.kernels.shape[3]
-        if ifBuffer == False & (self.iW < self.kW | self.iH < self.kH):
+        if ifBuffer & (self.iW < self.kW | self.iH < self.kH):
             ifBuffer = True
-        if ifBuffer == True:
+        if ifBuffer:
             if np.remainder(self.kH, 2) != 0:
                 self.bufferH = (self.kH - 1)/2
             else:
@@ -396,7 +1195,40 @@ class ConvolutionLayer2D:
         self.oH = np.floor((self.iH + (2 * self.bufferH) - self.kH) / self.stride) + 1
         self.oW = np.floor((self.iW + (2 * self.bufferW) - self.kW) / self.stride) + 1
 
-    def convoluteLayer(self, image):
+    @staticmethod
+    def calcOutputShape(imageShape, kernelsShape, stride, ifBuffer):
+        # imageShape is (iC, iH, iW)
+        # kernelsShape is (oC, iC, kH, kW)
+        # stride is integer
+        # ifBuffer is boolean
+
+        # Outputs shape of the output without initializing object.
+        # Necessary because I need the shape to initialize the kernels and biases and I need the kernels and biases to
+        # initialize the layer
+        iH = imageShape[1]
+        iW = imageShape[2]
+        oC = kernelsShape[0]
+        kH = kernelsShape[2]
+        kW = kernelsShape[3]
+        if ifBuffer & (iW < kW | iH < kH):
+            ifBuffer = True
+        if ifBuffer:
+            if np.remainder(kH, 2) != 0:
+                bufferH = (kH - 1)/2
+            else:
+                bufferH = kH/2
+            if np.remainder(kW, 2) != 0:
+                bufferW = (kW - 1)/2
+            else:
+                bufferW = kW/2
+        else:
+            bufferH = 0
+            bufferW = 0
+        oH = int(np.floor((iH + (2 * bufferH) - kH) / stride) + 1)
+        oW = int(np.floor((iW + (2 * bufferW) - kW) / stride) + 1)
+        return oC, oH, oW
+
+    def forward(self, image):
         # image is shape (N, iC, iH, iW)
         N = image.shape[0]
         output = np.zeros((N, self.oC, self.oH, self.oW))
@@ -514,10 +1346,27 @@ class PoolingLayer2D:
         self.oH = np.floor((self.iH - self.kH)/self.stride) + 1
         self.oW = np.floor((self.iW - self.kW)/self.stride) + 1
 
+    @staticmethod
+    def calcOutputShape(imageShape, kernelsShape, stride):
+        # imageShape is (iC, iH, iW)
+        # kernelsShape is (kH, kW)
+        # stride is integer
+
+        # Outputs shape of the output without initializing object.
+        oC = imageShape[0]
+        iH = imageShape[1]
+        iW = imageShape[2]
+        kH = kernelsShape[0]
+        kW = kernelsShape[1]
+
+        oH = int(np.floor((iH - kH) / stride) + 1)
+        oW = int(np.floor((iW - kW) / stride) + 1)
+        return oC, oH, oW
+
 
 class MaxPooling2D(PoolingLayer2D):
 
-    def maxPooling(self, image):
+    def forward(self, image):
         # image is shape (N, C, iH, iW)
         N = image.shape[0]
         output = np.zeros((N, self.C, self.oH, self.oW))
@@ -557,7 +1406,7 @@ class MaxPooling2D(PoolingLayer2D):
 
 class MinPooling2D(PoolingLayer2D):
 
-    def minPooling(self, image):
+    def forward(self, image):
         # image is shape (N, C, iH, iW)
         N = image.shape[0]
         output = np.zeros((N, self.C, self.oH, self.oW))
@@ -597,7 +1446,7 @@ class MinPooling2D(PoolingLayer2D):
 
 class MeanPooling2D(PoolingLayer2D):
 
-    def meanPooling(self, image):
+    def forward(self, image):
         # image is shape (N, C, iH, iW)
         N = image.shape[0]
         output = np.zeros((N, self.C, self.oH, self.oW))
@@ -631,7 +1480,7 @@ class MeanPooling2D(PoolingLayer2D):
 
 class L2Pooling2D(PoolingLayer2D):
 
-    def L2Pooling(self, image):
+    def forward(self, image):
         # image is shape (N, C, iH, iW)
         N = image.shape[0]
         output = np.zeros((N, self.C, self.oH, self.oW))
@@ -667,23 +1516,71 @@ class L2Pooling2D(PoolingLayer2D):
 
 class FlattenLayer2D:
 
+    def __init__(self, inputShape):
+        self.inputShape = inputShape
+
     @staticmethod
-    def flatten2D(image):
+    # Flatten 2D
+    def forward(image):
         # image is shape (N, iC, iH, iW)
         # output is shape (N, iC*iH*iW, 1)
         output = np.reshape(image, (image.shape[0], np.prod(image.shape[1:]), 1))
         return output
 
-    @staticmethod
-    def invertFlatten2D(derivativeArray, imageShape):
-        # Make sure to use ActivationLayer.invDiagMat() First!
-        # derivativeArray is shape (N, iC*iH*iW, 1)
+    # Invert Flatten 2D
+    def invertFlatten2D(self, derivativeArray):
+        # derivativeArray is shape (N, oC*oH*oW, oC*oH*oW)
         # imageShape is (N, iC, iH, iW)
-        output = np.reshape(derivativeArray, imageShape)
+        # Get rid of diagMat so derivativeArray shape is (N, oC*oH*oW, 1)
+        # Then reshape
+        derivativeArray = self.invDiagMat(derivativeArray)
+        output = np.reshape(derivativeArray, self.inputShape)
         return output
 
+    @staticmethod
+    def invDiagMat(diagMatStack):
+        # Custom method that takes diagonal matrices with shape (N, m, m)
+        # And outputs array with shape (N, m, 1)
+        diagMatStack = np.array(diagMatStack)
+        outputArray = np.sum(diagMatStack, 2, keepdims=True)
+        return outputArray
 
-class ANN(NN):
+
+class InvertFlattenLayer2D:
+
+    def __init__(self, outputShape):
+        self.outputShape = outputShape
+
+    # Invert Flatten 2D
+    def forward(self, inputActivations):
+        # derivativeArray is shape (N, iC*iH*iW, 1)
+        # imageShape is (N, iC, iH, iW)
+        output = np.reshape(inputActivations, self.outputShape)
+        return output
+
+    # Flatten 2D
+    def flatten2D(self, derivativeArray):
+        # image is shape (N, iC, iH, iW)
+        # output is shape (N, iC*iH*iW, 1)
+        output = np.reshape(derivativeArray, (derivativeArray.shape[0], np.prod(derivativeArray.shape[1:]), 1))
+        # diagonalize derivative matrices for Fully Connected Layers
+        output = self.diagMat(output)
+        return output
+
+    @staticmethod
+    def diagMat(inputStack):
+        # Custom method that takes (N, m, 1) or (N, 1, m) array
+        # And outputs (N, m, m) diagonal matrices
+        inputStack = np.array(inputStack)
+        diagMatrix = np.array([])
+        for N in inputStack:
+            nDiagMatrix = np.diagflat(N)
+            diagMatrix = np.stack((diagMatrix, nDiagMatrix)) if diagMatrix.size else nDiagMatrix
+        return diagMatrix
+
+
+
+class ANN:
 
     #
     # Init Function for Artificial Neural Network.
