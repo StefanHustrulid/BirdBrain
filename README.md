@@ -23,7 +23,7 @@ Incorperate S-shaped ReLU activation function
 (If I can get this to work then other functions with more than 1 learnable parameter will also work)
 
 Add Recurrent Layers to add RNN functionality
-(Used in transient data predictions. Ex: alexa)
+(Used in transient data predictions. Ex: Alexa/Siri/Google predicting the words you are saying as they are being spoken)
 
 
 Add Evolution Training Method
