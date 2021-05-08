@@ -34,3 +34,7 @@ Add Evolution Training Method
 Create a new version that uses the GPU to do calculations much faster
 (Only if I run out of other improvements to make!)
 (The new version would be much faster, but will lose usability on a Rasberry Pi or other device that does not have a GPU)
+
+
+Translate to C or another language that is usable by arduino?
+(I would rather outsource this if anyone volunteers)
