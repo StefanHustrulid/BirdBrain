@@ -1,19 +1,27 @@
-# wreckitralph-exosuit
+# BirdBrain
 
-Code for the Raspberry Pi and arduinos will be kept here
+Neural Network Project Initiated for the CSM Robotics Club Exoskeleton Team's WreckItRalph Project
 
-AI will be written in python.
+Matlab code can support Artificial Neural Network with fully connected layers and various adjustable parameters
 
-Ram limitation: 800MB
+Python code can support any combination in layers involved in a Convolution Neural Network
 
-Either i2c-tools or python-smbus will be used to interface with i2c
+The Convolution type layers are designed for N sets of 2D arrays with c channels. Ex: multiple RGB Images at a time
 
 
 
 # TODO
 
-Write AI-framework in python3 using class structure (using Matlab as source)
+No further improvements are planned for the Matlab code
 
-Write Train and Test scripts 
+Debugg the python code to ensure the program is fully functioning
 
-Write I2C interface
+Incoprerate different methods of gradient descent such as Momentum and Nesterov accelerated gradient
+
+Incorperate S-shaped ReLU activation functions
+
+Add Recurrent Layers to add RNN functionality
+
+Add Evolution Training Method
+
+Create a new version that uses the GPU to do calculations much faster
